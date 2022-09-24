@@ -24,7 +24,7 @@ const init_days = async () => {
 
 
 const get_current_day = () => {
-    const day = moment().tz(TIME_ZONE).day() - 1;
+    const day = moment().tz(TIME_ZONE).isoWeekday() - 1;
     if (day > 4) return 0;
     return day;
 };
@@ -52,23 +52,29 @@ const is_today_study = () => {
 }
 
 
+const format_lession = async (day_num: number, num: number, n: number, headless = false) => {
+    const day = await Days.findOne({ num: day_num }).exec();
+    const lession = day.lessions[num][n];
+    let text = "";
+    if (!headless) {
+        text += `День: <b>${day.name}</b>\n`;
+        text += `Лекция <b>${num + 1}</b>:\n\n`;
+    }
+    text += `<b>${lession.title}</b>\n\n`;
+    text += `Преподаватель: <b>${lession.teacher}</b>\n\n`;
+    text += `Платформа лекции: <b>${lession.link_platform}</b>\n\n`;
+    text += `Ссылка на лекцию: <b>${lession.link}</b>\n\n`;
+    return text;
+}
+
 
 const format_rosp = async (day_num: number) => {
     const day = await Days.findOne({ num: day_num }).exec();
     const nomin = get_nomitaror_denomitaror();
-    const ntext = nomin ? "Чис" : "Знам";
-    let text = `Расписание на <b>${day.name} (${ntext})</b>:\n\n`;
-
-    const lession_num = get_current_lesson();
-    const day_now = get_current_day();
-
+    let text = `Расписание на <b>${day.name} (${nomin ? "Чис" : "Знам"})</b>:\n\n`;
     for (const [i, [l1, l2]] of day.lessions.entries()) {
-        const num = `<b>${i + 1}.</b> `;
-
-        const is_now = (lession_num === i + 1 && day_now === day_num && !is_today_study()) ? "🔥" : "";
-
-        text += `${num} ${TIMES_DEF[i + 1].start} - ${TIMES_DEF[i + 1].end}:`;
-
+        const is_now = (get_current_lesson() === i + 1 && get_current_day() === day_num && !is_today_study()) ? "🔥" : "";
+        text += `<b>${i + 1}.</b> ${TIMES_DEF[i + 1].start} - ${TIMES_DEF[i + 1].end}:`;
         if (l1.empty && l2.empty)
             text += `  <b>Нет пар</b>\n`;
         else if (l1.empty || l2.empty)
@@ -91,9 +97,6 @@ const format_rosp = async (day_num: number) => {
 
 
 
-
-
-
-export default { init_days, get_nomitaror_denomitaror, TIMES_DEF, get_current_day, get_current_time, get_current_lesson, format_rosp, EDIT_MODE, is_today_study };
+export default { format_lession, init_days, get_nomitaror_denomitaror, TIMES_DEF, get_current_day, get_current_time, get_current_lesson, format_rosp, EDIT_MODE, is_today_study };
 
 

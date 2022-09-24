@@ -1,4 +1,3 @@
-import exp from "constants";
 import { Composer, Markup } from "telegraf";
 import Day from "../models/day";
 
@@ -6,34 +5,12 @@ import Day from "../models/day";
 import service from "../service";
 
 const composer = new Composer();
-const get_keyboard_lessions = async (day_num: number) => {
-    const day = await Day.findOne({ num: day_num }).exec();
-    const buttons = [[]];
-    for (const [i, [a, b]] of day.lessions.entries()) {
-        if (a.empty && b.empty) continue;
-        const is_duo = !a.empty && !b.empty;
-        if (!a.empty) {
-            const txt = `${i + 1} ${is_duo ? ': Ч' : ''}`;
-            const callback_data = `lession:${day_num}@${i}@0`;
-            buttons[0].push(Markup.button.callback(txt, callback_data));
-        }
-        if (!b.empty) {
-            const txt = `${i + 1} ${is_duo ? ': З' : ''}`;
-            const callback_data = `lession:${day_num}@${i}@1`;
-            buttons[0].push(Markup.button.callback(txt, callback_data));
-        }
-    }
-    buttons.push([Markup.button.callback('Назад', `back_w:${day_num}`)]);
 
-    if (service.EDIT_MODE.mode)
-        buttons.push([Markup.button.callback('Редактировать', `edit_mode:${day_num}`)]);
-
-    return Markup.inlineKeyboard(buttons);
-};
 
 const get_keyboard_days = async (selected_day: number) => {
     const days = await Day.find({}).exec();
     const buttons = [];
+    console.log(selected_day);
     buttons.push([Markup.button.callback('Подробнее', `back_l:${selected_day}`)]);
 
     for (const day of days) {
@@ -65,10 +42,23 @@ composer.action(/day:(\d+)/, async (ctx) => {
     await ctx.editMessageText(text, {
         parse_mode: 'HTML',
         reply_markup: keyboard.reply_markup
-    });
+    }).catch(() => { console.log('error edit'); });
 
+    await ctx.answerCbQuery();
 });
 
+composer.action(/back_w:(\d+)/, async (ctx) => {
+    const day_num = parseInt(ctx.match[1]);
+    const keyboard = await get_keyboard_days(day_num);
+    const text = await service.format_rosp(day_num);
+
+    await ctx.editMessageText(text, {
+        parse_mode: 'HTML',
+        reply_markup: keyboard.reply_markup
+    }).catch(() => { console.log('error edit'); });
+
+    await ctx.answerCbQuery();
+});
 
 
 export default composer;

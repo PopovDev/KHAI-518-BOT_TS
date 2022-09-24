@@ -27,6 +27,7 @@ async function main() {
   else {
     bot.launch({ dropPendingUpdates: true })
   }
+  console.log("Bot started")
 
 }
 
