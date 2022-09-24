@@ -1,11 +1,50 @@
 import express from 'express';
-const app = express();
-const port = 3000;
+import { PORT, BOT_TOKEN, WEBHOOK_DOMAIN, WEBHOOK_PATH, USE_WEBHOOK, MONGO_STRING } from './config';
+import { Telegraf } from 'telegraf';
+import handlers from './handlers';
+import db from 'mongoose';
+import service from './service';
+const app = express()
+app.use(express.json())
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+const bot = new Telegraf(BOT_TOKEN)
 
-app.listen(port, () => {
-  return console.log(`Express is listening at http://localhost:${port}`);
-});
+async function main() {
+  await db.connect(MONGO_STRING, { dbName: "KHAI_BOT_TS" });
+  await service.init_days();
+
+  for (const handler of handlers)
+    bot.use(handler)
+
+
+  if (USE_WEBHOOK) {
+    app.use(await bot.createWebhook({
+      domain: WEBHOOK_DOMAIN,
+      path: WEBHOOK_PATH,
+      drop_pending_updates: true,
+    }))
+  }
+  else {
+    bot.launch({ dropPendingUpdates: true })
+  }
+  console.log("Bot started")
+
+}
+
+if (USE_WEBHOOK) {
+  app.get('/', (req, res) => {
+    res.send('Webhook is working!');
+  });
+
+  app.listen(PORT, () => {
+    return console.log(`Express is listening at http://localhost:${PORT}`);
+  });
+}
+
+
+
+
+process.once('SIGINT', () => bot.stop('SIGINT'))
+process.once('SIGTERM', () => bot.stop('SIGTERM'))
+
+main()
