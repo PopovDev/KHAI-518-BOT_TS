@@ -80,7 +80,7 @@ const format_rosp = async (day_num: number) => {
         else if (l1.empty || l2.empty)
             text += `\n>    ${(l1.empty ? l2 : l1).title} ${is_now}\n`;
         else
-            if (nomin)
+            if (!nomin)
                 text += `\n> Ч: ${l1.title}\n> З: <u><b>${l2.title}</b></u> ${is_now}\n`;
             else
                 text += `\n> Ч: <u><b>${l1.title}</b></u> ${is_now}\n> З: ${l2.title}\n`;
