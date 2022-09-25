@@ -8,8 +8,8 @@ const composer = new Composer();
 const getKeyboard = (day_num: number) => {
     const buttons = [[], []];
     for (let i = 0; i < 4; i++) {
-        buttons[0].push(Markup.button.callback(`Ч(о)`, `open_edit_less:${day_num}@${i}@0@0`));
-        buttons[1].push(Markup.button.callback(`З`, `open_edit_less:${day_num}@${i}@1@0`));
+        buttons[0].push(Markup.button.callback(`${i+1} Ч(о)`, `open_edit_less:${day_num}@${i}@0@0`));
+        buttons[1].push(Markup.button.callback(`${i+1} З`, `open_edit_less:${day_num}@${i}@1@0`));
     }
     buttons.push([Markup.button.callback(`Назад`, `back_l:${day_num}`)]);
     return Markup.inlineKeyboard(buttons).reply_markup;
@@ -34,7 +34,6 @@ composer.action(/edit_mode:(\d+)/, async (ctx) => {
 });
 
 composer.action(/open_edit_less:(\d+)@(\d+)@(\d+)@(\d+)/, async (ctx) => {
-    console.log(ctx.match);
     const dayNum = parseInt(ctx.match[1]);
     const lessionNum = parseInt(ctx.match[2]);
     const lessionType = parseInt(ctx.match[3]);
