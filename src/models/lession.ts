@@ -2,10 +2,10 @@ import { Document, Schema } from "mongoose";
 
 export interface ILession extends Document {
     empty: boolean;
-    title: string;
-    teacher: string;
-    link_platform: string;
-    link: string;
+    title: string | undefined;
+    teacher: string | undefined;
+    link_platform: string | undefined;
+    link: string | undefined;
 }
 
 export const LessionSchema = new Schema({

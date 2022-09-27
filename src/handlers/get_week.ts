@@ -1,16 +1,14 @@
 import { Composer, Markup } from "telegraf";
 import Day from "../models/day";
-
-
-import service from "../service";
+import Service from "../service";
 
 const composer = new Composer();
 
 
 const get_keyboard_days = async (selected_day: number) => {
+
     const days = await Day.find({}).exec();
     const buttons = [];
-    console.log(selected_day);
     buttons.push([Markup.button.callback('Подробнее', `back_l:${selected_day}`)]);
 
     for (const day of days) {
@@ -19,7 +17,7 @@ const get_keyboard_days = async (selected_day: number) => {
         if (day.num === selected_day)
             text = `✅ ${text}`;
 
-        if (day.num === service.get_current_day() && service.is_today_study())
+        if (day.num === Service.day_now)
             text = `${text} 🔥`;
 
         buttons.push([Markup.button.callback(text, `day:${day.num}`)]);
@@ -28,16 +26,15 @@ const get_keyboard_days = async (selected_day: number) => {
 }
 
 composer.command("get_week", async (ctx) => {
-    const day = service.get_current_day();
-    const keyboard = await get_keyboard_days(day);
-    const text = await service.format_rosp(day);
-    await ctx.replyWithHTML(text, keyboard);
+    const keyboard = await get_keyboard_days(Service.day_now);
+    const text = await Service.format_rosp(Service.show_day);
+    await ctx.reply(text, { parse_mode: "HTML", reply_markup: keyboard.reply_markup, disable_web_page_preview: true });
 });
 
 composer.action(/day:(\d+)/, async (ctx) => {
     const day = parseInt(ctx.match[1]);
     const keyboard = await get_keyboard_days(day);
-    const text = await service.format_rosp(day);
+    const text = await Service.format_rosp(day);
 
     await ctx.editMessageText(text, {
         parse_mode: 'HTML',
@@ -50,7 +47,7 @@ composer.action(/day:(\d+)/, async (ctx) => {
 composer.action(/back_w:(\d+)/, async (ctx) => {
     const day_num = parseInt(ctx.match[1]);
     const keyboard = await get_keyboard_days(day_num);
-    const text = await service.format_rosp(day_num);
+    const text = await Service.format_rosp(day_num);
 
     await ctx.editMessageText(text, {
         parse_mode: 'HTML',

@@ -3,15 +3,16 @@ import { PORT, BOT_TOKEN, WEBHOOK_DOMAIN, WEBHOOK_PATH, USE_WEBHOOK, MONGO_STRIN
 import { Telegraf } from 'telegraf';
 import handlers from './handlers';
 import db from 'mongoose';
-import service from './service';
+import Service from './service';
 const app = express()
 app.use(express.json())
 
 const bot = new Telegraf(BOT_TOKEN)
 
 async function main() {
+  console.log('Connecting to database...')
   await db.connect(MONGO_STRING, { dbName: "KHAI_BOT_TS" });
-  await service.init_days();
+  await Service.init();
 
   for (const handler of handlers)
     bot.use(handler)
