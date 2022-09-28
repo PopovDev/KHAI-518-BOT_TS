@@ -1,6 +1,6 @@
 import { Composer, Markup } from "telegraf";
-import Day from "../models/day";
-import Service from "../service";
+import { Day } from "../models";
+import { Service } from "../service";
 
 const composer = new Composer();
 

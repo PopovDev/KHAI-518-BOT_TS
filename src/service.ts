@@ -1,25 +1,26 @@
-import Days from "./models/day";
+import { Day, Chat } from "./models";
 import moment from "moment-timezone";
+import { Telegraf, Context } from "telegraf";
 
 export class Constants {
     static readonly TZ = 'Europe/Kiev';
 
     static readonly TIMES = {
         1: { start: "8:00", end: "9:35" }, 2: { start: "9:50", end: "11:25" },
-        3: { start: "11:55", end: "13:30" }, 4: { start: "13:45", end: "15:20" }
+        3: { start: "11:55", end: "13:30" }, 4: { start: "13:45", end: "15:20" },
     }
     static readonly EDIT_MODE = { mode: true };
 }
 
-export default class Service {
+export class Service {
     public static async init() {
-        if (await Days.count() === 5) return;
+        if (await Day.count() === 5) return;
 
-        await Days.create({ num: 0, name: "Понедельник" });
-        await Days.create({ num: 1, name: "Вторник" });
-        await Days.create({ num: 2, name: "Среда" });
-        await Days.create({ num: 3, name: "Четверг" });
-        await Days.create({ num: 4, name: "Пятница" });
+        await Day.create({ num: 0, name: "Понедельник" });
+        await Day.create({ num: 1, name: "Вторник" });
+        await Day.create({ num: 2, name: "Среда" });
+        await Day.create({ num: 3, name: "Четверг" });
+        await Day.create({ num: 4, name: "Пятница" });
     }
     public static get day_now(): number {
         return moment().tz(Constants.TZ).isoWeekday() - 1;
@@ -49,7 +50,7 @@ export default class Service {
     }
     public static async format_lession(day_i: number, lession_i: number, dn_i: number): Promise<string> {
         const text: Array<string> = []
-        const day = await Days.findOne({ num: day_i });
+        const day = await Day.findOne({ num: day_i });
         if (!day) return '';
 
         const lessions = day.lessions[lession_i];
@@ -71,7 +72,7 @@ export default class Service {
     }
     public static async format_rosp(day_i: number): Promise<string> {
         const text: Array<string> = []
-        const day = await Days.findOne({ num: day_i });
+        const day = await Day.findOne({ num: day_i });
         if (!day) return '';
 
         text.push(`Расписание на: <b>${day.name}</b> (${!Service.is_denominator ? 'Чис' : 'Знам'})\n`);
@@ -99,4 +100,28 @@ export default class Service {
 
         return text.join('\n');
     }
+    public static async run_ping_before_lession(bot: Telegraf<Context>) {
+        if (!this.is_study_day) return;
+        if (this.lession_now) return;
+
+        const time = moment().add(5, 'minutes').tz(Constants.TZ).format("HH:mm");
+        const day = this.day_now;
+
+        for (const key in Constants.TIMES)
+            if (time >= Constants.TIMES[key].start && time <= Constants.TIMES[key].end) {
+                console.log(`Пингуем ${key} пару на ${day} день`)
+                const lession = await Day.findOne({ num: day }).then(day => day.lessions[parseInt(key) - 1]);
+                if (!lession[0].empty || !lession[1].empty) {
+                    const chats = await Chat.find();
+                    for (const chat of chats) {
+                        const adbs = await bot.telegram.getChatAdministrators(chat.id);
+                        const ans = adbs.filter(x => !x.user.is_bot).map(x => `[.](tg://user?id=${x.user.id})`).join('')
+                        bot.telegram.sendMessage(chat.id, `Внимание!${ans} Пара ${key} начнется через 5 минут!`, { parse_mode: 'Markdown' });
+                    }
+                }
+            }
+
+    }
+
+
 }

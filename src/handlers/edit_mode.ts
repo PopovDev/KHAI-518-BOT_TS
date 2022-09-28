@@ -1,6 +1,6 @@
 import { Composer, Markup } from "telegraf";
-import Day from "../models/day";
-import service, { Constants } from "../service";
+import { Day } from "../models";
+import { Constants, Service } from "../service";
 
 const composer = new Composer();
 
@@ -27,7 +27,7 @@ composer.command('disable_edit', async (ctx) => {
 
 composer.action(/edit_mode:(\d+)/, async (ctx) => {
     const dayNum = parseInt(ctx.match[1]);
-    const text = await service.format_rosp(dayNum);
+    const text = await Service.format_rosp(dayNum);
     const keyboard = getKeyboard(dayNum)
     await ctx.editMessageText(text, { parse_mode: 'HTML', reply_markup: keyboard, disable_web_page_preview: true, });
     await ctx.answerCbQuery();

@@ -3,10 +3,12 @@ import { PORT, BOT_TOKEN, WEBHOOK_DOMAIN, WEBHOOK_PATH, USE_WEBHOOK, MONGO_STRIN
 import { Telegraf } from 'telegraf';
 import handlers from './handlers';
 import db from 'mongoose';
-import Service from './service';
-const app = express()
-app.use(express.json())
+import { Service } from './service';
 
+const app = express()
+
+
+app.use(express.json())
 const bot = new Telegraf(BOT_TOKEN)
 
 async function main() {
@@ -15,7 +17,9 @@ async function main() {
   await Service.init();
 
   for (const handler of handlers)
-    bot.use(handler)
+    bot.use(handler);
+
+
 
 
   if (USE_WEBHOOK) {
@@ -28,7 +32,20 @@ async function main() {
   else {
     bot.launch({ dropPendingUpdates: true })
   }
+  const timer = setInterval(() => { Service.run_ping_before_lession(bot) }, 60000 * 5);
+
+
+  process.once("SIGTERM", () => {
+    clearInterval(timer)
+    bot.stop('SIGTERM')
+  })
+
+  process.once("SIGINT", () => {
+    bot.stop('SIGINT')
+    clearInterval(timer)
+  })
   console.log("Bot started")
+
 
 }
 
@@ -41,11 +58,5 @@ if (USE_WEBHOOK) {
     return console.log(`Express is listening at http://localhost:${PORT}`);
   });
 }
-
-
-
-
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
 
 main()
