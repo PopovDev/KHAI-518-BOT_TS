@@ -39,9 +39,12 @@ export class Service {
         const week = moment().tz(Constants.TZ).isoWeek();
         return week % 2 === 0;
     }
+    public static get is_denominator_show(): boolean {        
+        return this.is_study_day? this.is_denominator: !this.is_denominator;
+    }
     public static get is_study_day(): boolean {
         const day = this.day_now;
-        return day >= 0 && day <= 4;
+        return day < 6;
     }
     public static get show_day(): number {
         const day = this.day_now;
@@ -75,7 +78,7 @@ export class Service {
         const day = await Day.findOne({ num: day_i });
         if (!day) return '';
 
-        text.push(`Расписание на: <b>${day.name}</b> (${!Service.is_denominator ? 'Чис' : 'Знам'})\n`);
+        text.push(`Расписание на: <b>${day.name}</b> (${!Service.is_denominator_show ? 'Чис' : 'Знам'})\n`);
 
         for (const [i, [first, second]] of day.lessions.entries()) {
             const is_now = day_i === this.day_now && i + 1 === this.lession_now && this.is_study_day ? '🔥' : '';
@@ -87,7 +90,7 @@ export class Service {
                 const lession = first.empty ? second : first;
                 text.push(`>    ${lession.title} ${is_now}`)
             } else
-                if (this.is_denominator) {
+                if (this.is_denominator_show) {
                     text.push(`> Ч:    ${first.title} ${is_now}`)
                     text.push(`> <b>З:    <u>${second.title} ${is_now}</u></b>`)
                 } else {
