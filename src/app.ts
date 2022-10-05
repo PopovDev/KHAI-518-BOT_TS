@@ -50,7 +50,7 @@ async function main() {
 }
 
 if (USE_WEBHOOK) {
-  app.get('/', (req, res) => {
+  app.get('/', (_, res) => {
     res.send('Webhook is working!');
   });
 

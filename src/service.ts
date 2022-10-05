@@ -6,7 +6,7 @@ export class Constants {
     static readonly TZ = 'Europe/Kiev';
 
     static readonly TIMES = {
-        1: { start: "8:00", end: "9:35" }, 2: { start: "9:50", end: "11:25" },
+        1: { start: "08:00", end: "09:35" }, 2: { start: "09:50", end: "11:25" },
         3: { start: "11:55", end: "13:30" }, 4: { start: "13:45", end: "15:20" },
     }
     static readonly EDIT_MODE = { mode: true };
@@ -39,8 +39,8 @@ export class Service {
         const week = moment().tz(Constants.TZ).isoWeek();
         return week % 2 === 0;
     }
-    public static get is_denominator_show(): boolean {        
-        return this.is_study_day? this.is_denominator: !this.is_denominator;
+    public static get is_denominator_show(): boolean {
+        return this.is_study_day ? this.is_denominator : !this.is_denominator;
     }
     public static get is_study_day(): boolean {
         const day = this.day_now;
@@ -113,7 +113,7 @@ export class Service {
         for (const key in Constants.TIMES)
             if (time >= Constants.TIMES[key].start && time <= Constants.TIMES[key].end) {
                 console.log(`Пингуем ${key} пару на ${day} день`)
-                const lession = await Day.findOne({ num: day }).then(day => day.lessions[parseInt(key) - 1]);
+                const lession = await Day.findOne({ num: day }).then(day => day?.lessions[parseInt(key) - 1][this.is_denominator_show ? 1 : 0]);
                 if (!lession[0].empty || !lession[1].empty) {
                     const chats = await Chat.find();
                     for (const chat of chats) {

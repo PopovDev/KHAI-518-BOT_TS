@@ -5,7 +5,9 @@
       "target": "es2017",
       "moduleResolution": "node",
       "sourceMap": true,
-      "outDir": "dist"
+      "outDir": "dist",
+      "allowJs": false,
+      "noUnusedParameters": true
     },
     "lib": ["es2017"],
     "include": [
