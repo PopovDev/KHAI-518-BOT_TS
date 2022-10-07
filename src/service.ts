@@ -91,11 +91,11 @@ export class Service {
                 text.push(`>    ${lession.title} ${is_now}`)
             } else
                 if (this.is_denominator_show) {
-                    text.push(`> Ч:    ${first.title} ${is_now}`)
+                    text.push(`> Ч:    ${first.title}`)
                     text.push(`> <b>З:    <u>${second.title} ${is_now}</u></b>`)
                 } else {
                     text.push(`> <b>Ч:    <u>${first.title} ${is_now}</u></b>`)
-                    text.push(`> З:    ${second.title} ${is_now}`)
+                    text.push(`> З:    ${second.title}`)
                 }
             text.push('');
 
