@@ -44,7 +44,7 @@ export class Service {
     }
     public static get is_study_day(): boolean {
         const day = this.day_now;
-        return day < 6;
+        return day < 5;
     }
     public static get show_day(): number {
         const day = this.day_now;
