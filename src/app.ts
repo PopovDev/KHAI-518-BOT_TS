@@ -19,6 +19,8 @@ async function main() {
   await db.connect(MONGO_STRING, { dbName: "KHAI_BOT_TS" });
   await Service.init();
   bot.use((ctx, next) => {
+    //log every message
+    console.log(ctx.message)
     if (ctx.chat.type === 'group' || ctx.chat.type === 'supergroup') {
       ctx.reply('Я не работаю в группах')
       return
