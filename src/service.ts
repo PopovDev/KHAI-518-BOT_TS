@@ -106,7 +106,6 @@ export class Service {
     public static async run_ping_before_lession(bot: Telegraf<Context>) {
         if (!this.is_study_day) return;
         if (this.lession_now) return;
-
         const time = moment().add(5, 'minutes').tz(Constants.TZ).format("HH:mm");
         const day = this.day_now;
 
@@ -114,16 +113,17 @@ export class Service {
             if (time >= Constants.TIMES[key].start && time <= Constants.TIMES[key].end) {
                 console.log(`Пингуем ${key} пару на ${day} день`)
                 const lession = await Day.findOne({ num: day }).then(day => day?.lessions[parseInt(key) - 1][this.is_denominator_show ? 1 : 0]);
-                if (!lession[0].empty || !lession[1].empty) {
-                    const chats = await Chat.find();
-                    for (const chat of chats) {
-                        const adbs = await bot.telegram.getChatAdministrators(chat.id);
-                        const ans = adbs.filter(x => !x.user.is_bot).map(x => `[.](tg://user?id=${x.user.id})`).join('')
-                        bot.telegram.sendMessage(chat.id, `Внимание!${ans} Пара ${key} начнется через 5 минут!`, { parse_mode: 'Markdown' });
-                    }
+                if (!lession) return;
+                const chats = await Chat.find();
+                for (const chat of chats) {
+                    const adbs = await bot.telegram.getChatAdministrators(chat.id);
+                    const ans = adbs.filter(x => !x.user.is_bot).map(x => `[.](tg://user?id=${x.user.id})`).join('')
+                    bot.telegram.sendMessage(chat.id, `Внимание!${ans} Пара ${key} начнется через 5 минут!`, { parse_mode: 'Markdown' });
                 }
-            }
 
+            }
+        //wait 5 minutes
+        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
     }
 
 
