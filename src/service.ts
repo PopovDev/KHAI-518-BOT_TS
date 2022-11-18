@@ -122,8 +122,7 @@ export class Service {
                 }
 
             }
-        //wait 5 minutes
-        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
+      
     }
 
 

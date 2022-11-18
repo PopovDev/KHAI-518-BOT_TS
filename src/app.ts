@@ -29,7 +29,7 @@ async function main() {
   else {
     bot.launch({ dropPendingUpdates: true })
   }
-  const timer = setInterval(() => { Service.run_ping_before_lession(bot) }, 1000);
+  const timer = setInterval(() => { Service.run_ping_before_lession(bot) }, 1000*60*5);
 
 
   process.once("SIGTERM", () => {
